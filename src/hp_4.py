@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from csv import DictReader, DictWriter
 from collections import defaultdict
+import csv
 
 
 def reformat_dates(old_dates):
@@ -33,11 +34,14 @@ def add_date_range(values, start_date):
 
 
 def fees_report(infile, outfile):
-    """Calculates late fees per patron id and writes a summary report to
-    outfile."""
+    """
+    Calculates late fees per patron id and writes a summary report to outfile.
+    """
     fees_dict = defaultdict(float)
-    with open(infile, 'r') as file:
-        reader = DictReader(file)
+
+    # Read input CSV file and calculate late fees
+    with open(infile, 'r', newline='') as file:
+        reader = csv.DictReader(file)
         for row in reader:
             patron_id = row['patron_id']
             date_due = datetime.strptime(row['date_due'], '%m/%d/%Y')
@@ -46,9 +50,10 @@ def fees_report(infile, outfile):
                 days_late = (date_returned - date_due).days
                 late_fee = days_late * 0.25
                 fees_dict[patron_id] += late_fee
-    
+
+    # Write summary report to output CSV file
     with open(outfile, 'w', newline='') as file:
-        writer = DictWriter(file, fieldnames=['patron_id', 'late_fees'])
+        writer = csv.DictWriter(file, fieldnames=['patron_id', 'late_fees'])
         writer.writeheader()
         for patron_id, late_fee in fees_dict.items():
             writer.writerow({'patron_id': patron_id, 'late_fees': "{:.2f}".format(late_fee)})
