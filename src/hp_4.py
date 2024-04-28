@@ -51,12 +51,22 @@ def fees_report(infile, outfile):
                 late_fee = days_late * 0.25
                 fees_dict[patron_id] += late_fee
 
+    # Ensure all patrons have a fee entry
+    all_patrons = set()
+    with open(infile, 'r', newline='') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            all_patrons.add(row['patron_id'])
+    for patron in all_patrons:
+        fees_dict[patron]  # Ensure every patron has an entry
+
     # Write summary report to output CSV file
     with open(outfile, 'w', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=['patron_id', 'late_fees'])
         writer.writeheader()
         for patron_id, late_fee in fees_dict.items():
             writer.writerow({'patron_id': patron_id, 'late_fees': "{:.2f}".format(late_fee)})
+
 
 
 # The following main selection block will only run when you choose
